@@ -1,0 +1,50 @@
+services:
+  postgres:
+    container_name: postgresdb
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    networks:
+      - contsecuritynetwork
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+    ports:
+      - 5432:5432
+    image: postgres:15.1-alpine
+
+  api-node:
+    container_name: api-node-app
+    build:
+      context: ./api-node
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=postgres://postgres:${POSTGRES_PASSWORD}@postgresdb:5432/postgres
+    networks:
+      - contsecuritynetwork
+    ports:
+      - 3000:3000
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    read_only: true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    security_opt:
+      - no-new-privileges
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+          cpus: '0.5'
+    tmpfs:
+      - /tmp:rw,size=64M
+
+networks:
+  contsecuritynetwork:
+    name: contsecuritynetwork
+
+volumes:
+  pgdata:
+    name: pgdata

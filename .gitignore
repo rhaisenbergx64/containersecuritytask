@@ -1,0 +1,8 @@
+.env
+**/node_modules
+**/.npm
+*.un~
+*.json~
+
+.DS_Store
+**/tmp
